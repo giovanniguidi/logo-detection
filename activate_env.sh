@@ -1,0 +1,1 @@
+conda activate logo_detection

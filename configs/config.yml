@@ -1,0 +1,67 @@
+---
+dataset_folder: "../datasets/"
+labels_file: "./datasets/labels.json"
+image:
+    image_size:
+        y_size: 256
+        x_size: 256
+        num_channels: 3
+    query_image_size:
+        y_size: 64
+        x_size: 64
+    convert_to_grayscale: false
+train:    
+    optimizer: "adam"      #adam, adagrad, adadelta, rmsprop, sgd
+    learning_rate: 0.0001  
+    batch_size: 16
+    num_epochs: 10
+    train_on_subset: 
+      enabled: true
+      dataset_fraction: 0.1     
+    use_multiprocessing: false
+    num_workers: 1
+    weights_initialization: 
+        use_pretrained_weights: false
+        restore_from: "./experiments/snapshot_last.h5"
+    output:
+        output_weights: "./snapshots/weights.h5"
+predict: 
+    weights_file: "./experiments/snapshot_last.h5"
+    batch_size: 16
+network:
+    train_from_scratch: true
+    decoder: 'decoder_8x'   #either decoder_8x, decoder_16x, decoder_32x 
+    graph_path: "./snapshots/graph.json"
+#    num_classes: 21
+    loss: "categorical_crossentropy"
+data_aug: 
+    use_data_aug: false
+    rotation_range: 3 
+    x_shift_range: 0.1
+    y_shift_range: 0.05
+    zoom_range: [0.95, 1.05]
+    horizontal_flip: false
+    vertical_flip: true
+    shear_range: 2.
+    brightness_range: 0.3
+    saturation_range: 0.5
+callbacks:
+    early_stopping: 
+        enabled: false
+        monitor: "val_loss"
+        patience: 10
+    model_best_checkpoint: 
+        enabled: true
+        out_file: "./experiments/snapshot_best.h5"
+        monitor: "val_loss"
+    model_last_checkpoint: 
+        enabled: true
+        out_file: "./experiments/snapshot_last.h5"
+    tensorboard: 
+        enabled: false
+        log_dir: "./tensorboard/"
+    reduce_lr_on_plateau: 
+        enabled: false
+        monitor: "val_loss"
+        factor: 0.1
+        patience: 10

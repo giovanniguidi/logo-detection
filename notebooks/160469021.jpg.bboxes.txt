@@ -1,0 +1,2 @@
+x y width height
+353 271 208 141
