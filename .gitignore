@@ -13,3 +13,5 @@ datasets/labels.json
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 *~
+activate_env.sh 
+README_draft.md

@@ -174,11 +174,11 @@ def create_labels(base_folder, val_size, test_size, random_state):
     #1.6e6   only true triplets
     print("num true triplets", len(dataset_all_true_triplets))
     print("num false triplets", len(dataset_all_false_triplets))
-               
+
     random.seed(2)
 
     num_true_triplets = 180000
-    num_false_triplets = 0
+    num_false_triplets = 180000
 
     dataset_true_triplets = random.sample(dataset_all_true_triplets, num_true_triplets)
     dataset_false_triplets = random.sample(dataset_all_false_triplets, num_false_triplets)
@@ -216,8 +216,8 @@ if __name__ == '__main__':
     filename_out = '../datasets/labels.json'
     
     #split validation into val and test
-    val_size = 0.1    
-    test_size = 0.08
+    val_size = 0.03  
+    test_size = 0.03
 
     random_state = 8
     
