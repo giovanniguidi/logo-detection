@@ -22,12 +22,47 @@ Install the libraries using:
 pip install -r requirements.txt 
 ```
 
-
 ## Weights
 
 The graph and trained weights can be found at:
 
 https://drive.google.com/drive/folders/1ojz6i0dsEEOzJ3qaAeutqD64x5dsxVvF?usp=sharing
+
+## Results
+
+Here a screenshots of the prediction for a logo of the same class:
+
+![picture alt](https://github.com/giovanniguidi/logo-detection/blob/master/figures/results2.png "")
+
+And here the prediction for a different class. The predicted mask is zero.
+
+![picture alt](https://github.com/giovanniguidi/logo-detection/blob/master/figures/results4.png "")
+
+
+## Train
+
+To train a model run:
+
+```
+python main.py -c configs/config.yml --train
+```
+
+If you set "weights_initialization" in config.yml you can use a pretrained model to inizialize the weights, so you can stop the training and restore 
+latere if needed.  
+
+During training the best and last snapshots are saved if you set those options in "callbacks" in config.yml.
+
+
+
+## Inference 
+
+To predict on a single image you use this command:
+
+```
+python main.py -c configs/config.yml --predict --query query_path --image filename_path --output result.jpg
+```
+
+You can use predict.sh script to launch a quick test of inference
 
 
 ## To do

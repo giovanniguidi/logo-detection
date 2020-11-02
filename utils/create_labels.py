@@ -172,24 +172,25 @@ def create_labels(base_folder, val_size, test_size, random_state):
                 dataset_all_false_triplets.append(out_dict_triplet)
 
     #1.6e6   only true triplets
-    print("num true triplets", len(dataset_all_true_triplets))
-    print("num false triplets", len(dataset_all_false_triplets))
+    print("num tot true triplets", len(dataset_all_true_triplets))
+    print("num tot false triplets", len(dataset_all_false_triplets))
 
     random.seed(2)
 
     num_true_triplets = 180000
-    num_false_triplets = 180000
+    num_false_triplets = 360000
 
     dataset_true_triplets = random.sample(dataset_all_true_triplets, num_true_triplets)
     dataset_false_triplets = random.sample(dataset_all_false_triplets, num_false_triplets)
 
-    print(len(dataset_true_triplets))
-    print(len(dataset_false_triplets))
+    print("num true triplets", len(dataset_true_triplets))
+    print("num false triplets", len(dataset_false_triplets))
 
     dataset = dataset_true_triplets + dataset_false_triplets
 
     print("len dataset", len(dataset))
-
+    print()
+    
     dataset_train_val, dataset_test = train_test_split(dataset, test_size=test_size, random_state=random_state)  
     dataset_train, dataset_val = train_test_split(dataset_train_val, test_size=val_size, random_state=random_state)  
         

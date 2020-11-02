@@ -17,7 +17,7 @@ train:
     num_epochs: 10
     train_on_subset: 
       enabled: true
-      dataset_fraction: 0.1     
+      dataset_fraction: 0.1    
     use_multiprocessing: false
     num_workers: 1
     weights_initialization: 

@@ -7,8 +7,6 @@ from PIL import Image, ImageStat
 def read_query(dataset_folder, elem_query, y_size, x_size, black_white = False):
 
     filename = elem_query['filename']
-    bbox = elem_query['bbox']
-    bbox = [int(i) for i in bbox] 
 
 #    print(filename)
 
@@ -16,8 +14,11 @@ def read_query(dataset_folder, elem_query, y_size, x_size, black_white = False):
 #    fpath = filename
 #    print(fpath)
     img = Image.open(fpath)
-    
-    img = img.crop( (bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3]) )
+
+    if 'bbox' in elem_query.keys():
+        bbox = elem_query['bbox']
+        bbox = [int(i) for i in bbox] 
+        img = img.crop( (bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3]) )
 
     img = img.resize((x_size, y_size), Image.ANTIALIAS)
     

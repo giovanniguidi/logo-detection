@@ -9,8 +9,12 @@ from models.model import Network
 from trainers.trainer import Trainer
 from predictors.predictor import PredictorFCN
 #from utils.score_prediction import score_prediction
-from preprocessing.preproc_functions import read_image, normalize_0_mean_1_variance
+from preprocessing.preproc_functions import read_image, read_query, normalize_0_1
 #from keras.applications.vgg16 import preprocess_input
+from tensorflow.keras.models import load_model, model_from_json
+from skimage.measure import label, regionprops
+#import cv2
+from PIL import Image, ImageDraw
 
 def train(args):
     """
@@ -85,48 +89,60 @@ def predict(args):
         
     config_path = args.conf
 
-    filename = args.filename
-    
+    query_filename =  args.query
+    image_filename = args.image
+    output_filename = args.output
+
     with open(config_path) as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
-        
-    with open(config['labels_file']) as f:
-        dataset = json.load(f)
-        
-    test_generator = DataGenerator(config, dataset['test'], shuffle=False, use_data_augmentation=False)
-        
+
     y_size = config['image']['image_size']['y_size']
     x_size = config['image']['image_size']['x_size']
-    num_channels = config['image']['image_size']['num_channels']
-#    convert_to_grayscale = config['image']['convert_to_grayscale']
-            
-    #read image
-#    if num_channels == 1 or (num_channels == 3 and convert_to_grayscale):
-#        image = read_image_BW('./', filename, y_size, x_size)
-#        image = normalize_0_mean_1_variance_BW(image, y_size, x_size)
-#        image = np.reshape(image, (1, y_size, x_size, 1))
-#    else:
-#        image = read_image_color('./', filename, y_size, x_size)
-#        image = normalize_0_mean_1_variance_color(image, y_size, x_size)
-#        image = np.reshape(image, (1, y_size, x_size, 3))
-    
-    #print(image.shape)
-        
-#    graph_file =  config['predict']['graph_file']
-#    weights_file = config['predict']['weights_file']
+    y_query_size = config['image']['query_image_size']['y_size']
+    x_query_size = config['image']['query_image_size']['x_size']
 
-    image = read_image('./', filename, y_size, x_size, black_white = False)
-    #image = normalize_0_mean_1_variance(image_orig)
-    image = preprocess_input(image, mode='tf') 
+
+    query_dict = {"filename": query_filename}
     
-    predictor = PredictorFCN(config)
-   
-#    pred = predictor.predict(image)
-    
-    prediction = predictor.predict(np.expand_dims(image, axis=0))[0]
-    pred_classes = np.argmax(prediction, axis=2)
-    
-    print("pred_classes:", pred_classes)
+    query = read_query("./", query_dict, y_query_size, x_query_size, black_white = False)
+    image = read_image("./", image_filename, y_size, x_size, black_white = False)
+
+    query = normalize_0_1(query)                   
+    image = normalize_0_1(image) 
+    query = np.expand_dims(query, axis=0)
+    image = np.expand_dims(image, axis=0)
+
+    #load model
+    json_file = open(config['network']['graph_path'], 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+
+    model = model_from_json(loaded_model_json)
+    # load weights into new model
+    model.load_weights(config['predict']['weights_file'])
+
+
+    threshold = 0.5 #threshold for the prediction
+
+    output_prob = model.predict([query, image])
+    output = np.where(output_prob > threshold, 1., 0.)
+
+    query = query[0, ...]
+    image = image[0, ...]
+    output = output[0, ...]
+
+    lbl_0 = label(output) 
+    props = regionprops(lbl_0)
+
+    image_with_bbox = Image.fromarray(np.uint8(image * 255.))
+    draw = ImageDraw.Draw(image_with_bbox)
+
+    for prop in props:
+        draw.rectangle(((prop.bbox[1], prop.bbox[0]), (prop.bbox[3], prop.bbox[2])), outline="red", width=3)
+
+    image_with_bbox.save(output_filename)
+
+#    image_with_bbox = np.asarray(image_with_bbox)/255.
 
 if __name__ == '__main__':
 
@@ -138,7 +154,9 @@ if __name__ == '__main__':
     group.add_argument('--predict_on_test', action='store_true', help='Predict on test set')
     group.add_argument('--predict', action='store_true', help='Predict on single file')
 
-    parser.add_argument('--filename', help='path to file')
+    parser.add_argument('--query', help='path to query file')
+    parser.add_argument('--image', help='path to image file')
+    parser.add_argument('--output', help='path to output file')
     
     args = parser.parse_args()
    
@@ -149,8 +167,8 @@ if __name__ == '__main__':
         predict_on_test(args)      
 
     elif args.predict:
-        if args.filename is None:
-            raise Exception('missing --filename FILENAME')
+        if args.image is None:
+            raise Exception('missing --image image_path')
         else:
             print('predict')
         predict(args)
